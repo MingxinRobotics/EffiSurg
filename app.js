@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const mediaVersion = '20260916-220f8c7907';
+  const mediaVersion = '20260916-handoff-9e3c1b39';
   const tasks = {
     'phantom-handoff': { label: 'Needle handoff on phantom tissue', ours: 20, baseline: 18 },
     'phantom-knot': { label: 'Knot tying on phantom tissue', ours: 20, baseline: 17 },
