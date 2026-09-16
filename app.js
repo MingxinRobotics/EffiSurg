@@ -1,54 +1,44 @@
 (() => {
   'use strict';
-  const mediaVersion = 'video-00d590ebf0db';
+  const mediaVersion = '20260916-220f8c7907';
   const tasks = {
     'phantom-handoff': { label: 'Needle handoff on phantom tissue', ours: 20, baseline: 18 },
     'phantom-knot': { label: 'Knot tying on phantom tissue', ours: 20, baseline: 17 },
     'exvivo-handoff': { label: 'Needle handoff on ex vivo tissue', ours: 19, baseline: 15 },
     'exvivo-knot': { label: 'Knot tying on ex vivo tissue', ours: 18, baseline: 14 }
   };
-  const views = { microscope: 'Microscope view', left: 'Left wrist view', right: 'Right wrist view' };
   const players = { ours: document.querySelector('#ours-video'), baseline: document.querySelector('#baseline-video') };
   const playButton = document.querySelector('#play-both');
   const status = document.querySelector('#demo-status');
   const rate = document.querySelector('#playback-rate');
-  let task = 'phantom-handoff', view = 'microscope', generation = 0;
+  let task = 'phantom-handoff', generation = 0;
 
   function updatePlayButton() {
     const playing = Object.values(players).some(video => !video.paused && !video.ended);
     playButton.textContent = playing ? 'Ⅱ Pause both' : '▶ Play both';
   }
-  function updateVideos(preserveTime = false) {
+  function updateVideos() {
     generation++;
     for (const [method, video] of Object.entries(players)) {
-      const previousTime = preserveTime ? video.currentTime : 0;
       video.pause();
-      const name = `${task}-${method}-${view}`;
+      const name = `${task}-${method}-microscope`;
       video.poster = `assets/posters/${name}.jpg?v=${mediaVersion}`;
       video.src = `assets/video/${name}.mp4?v=${mediaVersion}`;
-      video.setAttribute('aria-label', `${method === 'ours' ? 'EffiSurg' : 'Transformer Flow Policy'}: ${tasks[task].label}, ${views[view]}`);
+      video.setAttribute('aria-label', `${method === 'ours' ? 'EffiSurg' : 'Transformer Flow Policy'}: ${tasks[task].label}, Microscope view`);
       video.onloadedmetadata = () => {
         video.playbackRate = Number(rate.value);
-        if (previousTime && Number.isFinite(video.duration)) video.currentTime = Math.min(previousTime, Math.max(0, video.duration - .1));
       };
       video.load();
       document.querySelector(`#${method}-success`).textContent = `${tasks[task][method]}/20 successful trials`;
     }
     document.querySelectorAll('[data-task]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.task === task)));
-    document.querySelectorAll('[data-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
-    document.querySelectorAll('.camera-label').forEach(label => { label.textContent = views[view]; });
-    status.textContent = `${tasks[task].label} · ${views[view]}`;
+    status.textContent = `${tasks[task].label} · Microscope view`;
     updatePlayButton();
   }
   document.querySelectorAll('[data-task]').forEach(button => button.addEventListener('click', () => {
     if (task === button.dataset.task) return;
     task = button.dataset.task;
     updateVideos();
-  }));
-  document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
-    if (view === button.dataset.view) return;
-    view = button.dataset.view;
-    updateVideos(true);
   }));
   playButton.addEventListener('click', async () => {
     const videos = Object.values(players);
@@ -65,7 +55,7 @@
   });
   document.querySelector('#restart-both').addEventListener('click', () => {
     Object.values(players).forEach(video => { video.pause(); video.currentTime = 0; });
-    status.textContent = `${tasks[task].label} · ${views[view]} · Both videos reset`;
+    status.textContent = `${tasks[task].label} · Microscope view · Both videos reset`;
   });
   rate.addEventListener('change', () => Object.values(players).forEach(video => { video.playbackRate = Number(rate.value); }));
   Object.values(players).forEach(video => {
